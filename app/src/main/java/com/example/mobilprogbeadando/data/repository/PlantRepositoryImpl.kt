@@ -16,4 +16,5 @@ class PlantRepositoryImpl @Inject constructor(private val plantDao: PlantDao) : 
     override suspend fun upsertPlant(plant: Plant) = plantDao.upsert(plant)
 
     override suspend fun deletePlant(plant: Plant) = plantDao.delete(plant)
+    override suspend fun deleteByLocation(locationId: Int) = plantDao.deleteByLocation(locationId)
 }

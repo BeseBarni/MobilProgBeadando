@@ -2,21 +2,16 @@ package com.example.mobilprogbeadando.presentation.ui.components.plants
 
 import android.annotation.SuppressLint
 import android.net.Uri
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -25,7 +20,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,17 +29,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.mobilprogbeadando.R
-import com.example.mobilprogbeadando.data.plants.Plant
 import com.example.mobilprogbeadando.data.plants.PlantLocation
 import com.example.mobilprogbeadando.presentation.ui.PlantsViewModel
 
@@ -127,7 +117,7 @@ fun LocationDialog(selectedLocation : PlantLocation, showDialog : MutableState<B
                                         PlantListItem(
                                             plant = plant,
                                             onDelete = {
-                                                viewModel.deletePlant(plant)
+                                                viewModel.deletePlant(plant, selectedLocation)
                                             },
                                             onClick = {
                                                 showPlantDialog.value = true
@@ -142,9 +132,10 @@ fun LocationDialog(selectedLocation : PlantLocation, showDialog : MutableState<B
                     if(showPlantDialog.value){
                         PlantDialog(viewModel,showPlantDialog)
                     }
-                    PlantAddDialog(locationId = selectedLocation.id,onDismissRequest = {
-                        if(it != null) {
-                            viewModel.addPlant(it)
+                    PlantAddDialog(locationId = selectedLocation.id,onDismissRequest = {plant, traits ->
+
+                        if(plant != null && traits != null) {
+                            viewModel.addPlant(plant, traits, plantLocation = selectedLocation)
                         }
                     },showDialog = showPlantAddDialog, viewModel = viewModel)
                 }

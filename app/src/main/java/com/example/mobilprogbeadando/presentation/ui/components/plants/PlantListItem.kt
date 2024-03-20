@@ -19,9 +19,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardColors
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -40,7 +37,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
@@ -51,7 +47,7 @@ import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun PlantListItem(plant: Plant, onDelete : (plant : Plant) -> Unit, onClick : (plant : Plant) -> Unit) {
+fun PlantListItem(plant: Plant, onDelete : (plant : Plant) -> Unit, onClick : (plant : Plant) -> Unit, isDeleteFunction : Boolean = true) {
 
     val haptic = LocalHapticFeedback.current
     var isEnabled by remember { mutableStateOf(false) }
@@ -67,23 +63,37 @@ fun PlantListItem(plant: Plant, onDelete : (plant : Plant) -> Unit, onClick : (p
                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
              }, onClick = {
                  haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                onClick(plant)
+                 onClick(plant)
              })
         ){
             Row(){
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(Uri.parse(plant.imagePath))
-                        .placeholder(R.drawable.location_placeholder)
-                        .build(), "", contentScale = ContentScale.Crop, modifier = Modifier
-                        .padding(12.dp)
-                        .height(96.dp)
-                        .width(96.dp)
-                        .clip(RoundedCornerShape(96.dp))
-                        .clip(RoundedCornerShape(16.dp)),
+                if(plant.imagePath == ""){
+                    Image(
+                        painter = painterResource(id = R.drawable.plant_placeholder),
+                        "Plant placeholder",
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .height(96.dp)
+                            .width(96.dp)
+                            .clip(RoundedCornerShape(96.dp))
+                            .clip(RoundedCornerShape(16.dp))
+                        )
+                }else{
 
-                    alignment = Alignment.CenterStart,
-                )
+                    AsyncImage(
+                        model = ImageRequest.Builder(LocalContext.current)
+                            .data(Uri.parse(plant.imagePath))
+                            .placeholder(R.drawable.plant_placeholder)
+                            .build(), "", contentScale = ContentScale.Crop, modifier = Modifier
+                            .padding(12.dp)
+                            .height(96.dp)
+                            .width(96.dp)
+                            .clip(RoundedCornerShape(96.dp))
+                            .clip(RoundedCornerShape(16.dp)),
+
+                        alignment = Alignment.CenterStart,
+                    )
+                }
                 Column(
                     verticalArrangement = Arrangement.Center,
                     modifier = Modifier
@@ -104,7 +114,7 @@ fun PlantListItem(plant: Plant, onDelete : (plant : Plant) -> Unit, onClick : (p
                     )
                 }
             }
-            if(isEnabled){
+            if(isEnabled && isDeleteFunction){
                 Icon(
                     Icons.Default.Close,"",
                     tint = Color.White,

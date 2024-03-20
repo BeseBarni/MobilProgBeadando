@@ -6,7 +6,6 @@ import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.util.fastFilter
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.mobilprogbeadando.data.plants.Plant
@@ -14,15 +13,10 @@ import com.example.mobilprogbeadando.data.plants.PlantLocation
 import com.example.mobilprogbeadando.domain.repository.PlantLocationRepository
 import com.example.mobilprogbeadando.domain.repository.PlantRepository
 import com.example.mobilprogbeadando.domain.repository.TextAiRepository
-import com.example.mobilprogbeadando.domain.repository.WeatherRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.mapLatest
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.ZoneId
@@ -55,11 +49,13 @@ class PlantsViewModel @Inject constructor(private val plantsLocationRepository: 
         shouldShowCamera.value = !shouldShowCamera.value
     }
 
-    fun addPlant(plant: Plant) {
+    fun addPlant(plant: Plant, traits : List<String>, plantLocation: PlantLocation) {
         viewModelScope.launch {
-            val description = repository.getDescription(plant.name,listOf("Calm", "Nonchalant")).data.outputs[0].text
+            val description = repository.getDescription(plant.name,traits).data.outputs[0].text
             plant.description = description
             plantRepository.upsertPlant(plant)
+            plantLocation.numberOfPlants++
+            plantsLocationRepository.upsertLocation(plantLocation)
         }
     }
 
@@ -83,7 +79,6 @@ class PlantsViewModel @Inject constructor(private val plantsLocationRepository: 
         }
     }
 
-
     fun setSelectedLocation(plantLocation: PlantLocation){
         selectedLocation.value = plantLocation
     }
@@ -102,13 +97,17 @@ class PlantsViewModel @Inject constructor(private val plantsLocationRepository: 
 
     fun deleteLocation(plantLocation: PlantLocation){
         viewModelScope.launch {
+            plantRepository.deleteByLocation(plantLocation.id!!)
             plantsLocationRepository.deleteLocation(plantLocation)
+
         }
     }
 
-    fun deletePlant(plant: Plant){
+    fun deletePlant(plant: Plant, plantLocation: PlantLocation){
         viewModelScope.launch {
             plantRepository.deletePlant(plant)
+            plantLocation.numberOfPlants--
+            plantsLocationRepository.upsertLocation(plantLocation)
         }
     }
 }

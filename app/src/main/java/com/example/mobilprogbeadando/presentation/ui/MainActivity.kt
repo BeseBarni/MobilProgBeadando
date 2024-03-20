@@ -2,35 +2,22 @@ package com.example.mobilprogbeadando.presentation.ui
 
 import android.Manifest
 import android.content.pm.PackageManager
-import android.net.Uri
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.example.mobilprogbeadando.R
 import com.example.mobilprogbeadando.navigation.AppNavigation
-import com.example.mobilprogbeadando.presentation.ui.components.plants.CameraPreview
 import com.example.mobilprogbeadando.presentation.ui.theme.MobilProgBeadandoTheme
 import dagger.hilt.android.AndroidEntryPoint
-import java.io.File
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
-
-
-
-    private lateinit var outputDirectory: File
-    private lateinit var cameraExecutor: ExecutorService
 
 
 
@@ -44,18 +31,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    fun getOutputDirectory(): File {
-        val mediaDir = externalMediaDirs.firstOrNull()?.let {
-            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
-        }
-
-        return if (mediaDir != null && mediaDir.exists()) mediaDir else filesDir
-    }
-
-    override fun onDestroy() {
-        super.onDestroy()
-        cameraExecutor.shutdown()
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,14 +42,18 @@ class MainActivity : ComponentActivity() {
         }
         enableEdgeToEdge()
         setContent {
-            Main(cameraExecutor,outputDirectory = { getOutputDirectory()})
+
+            val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.RequestPermission()) {
+
+            }
+
+
+            Main()
 
         }
 
         requestCameraPermission()
 
-        outputDirectory = getOutputDirectory()
-        cameraExecutor = Executors.newSingleThreadExecutor()
     }
 
     private fun requestCameraPermission() {
@@ -94,8 +73,23 @@ class MainActivity : ComponentActivity() {
 
             else -> requestPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
-    }
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
 
+
+            }
+
+            ActivityCompat.shouldShowRequestPermissionRationale(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) -> {}
+
+            else -> requestPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
 
 
     private  fun hasRequiredPermissions() : Boolean {
@@ -109,23 +103,16 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         private val CAMERAX_PERMISSIONS = arrayOf(
-            Manifest.permission.CAMERA
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION
         )
     }
 
 }
 
 @Composable
-fun Main(cameraExecutor : ExecutorService, outputDirectory : () -> File,viewModel : PlantsViewModel = hiltViewModel()) {
+fun Main(viewModel : PlantsViewModel = hiltViewModel()) {
     MobilProgBeadandoTheme {
-
-        val shouldShowCamera = viewModel.shouldShowCamera.collectAsState()
-
-        fun handleImageCapture(uri: Uri) {
-            viewModel.shouldShowCamera.value = false
-            viewModel.imageUri.value = uri
-        }
-
         AppNavigation(viewModel)
     }
 }

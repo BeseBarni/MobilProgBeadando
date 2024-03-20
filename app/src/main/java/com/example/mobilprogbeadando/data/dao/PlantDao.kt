@@ -5,7 +5,6 @@ import androidx.room.Delete
 import androidx.room.Query
 import androidx.room.Upsert
 import com.example.mobilprogbeadando.data.plants.Plant
-import com.example.mobilprogbeadando.data.plants.PlantLocation
 import kotlinx.coroutines.flow.Flow
 
 @Dao
@@ -25,4 +24,7 @@ interface PlantDao {
 
     @Query("SELECT * FROM plants ORDER BY name")
     fun getQuestPlants() : Flow<List<Plant>>
+
+    @Query("DELETE FROM plants WHERE locationId = :locationId")
+    suspend fun deleteByLocation(locationId : Int)
 }

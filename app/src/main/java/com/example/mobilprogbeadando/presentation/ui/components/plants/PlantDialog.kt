@@ -1,8 +1,9 @@
 package com.example.mobilprogbeadando.presentation.ui.components.plants
 
+import android.annotation.SuppressLint
 import android.net.Uri
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -32,6 +33,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -41,9 +43,9 @@ import androidx.compose.ui.window.DialogProperties
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.mobilprogbeadando.R
-import com.example.mobilprogbeadando.data.plants.Plant
 import com.example.mobilprogbeadando.presentation.ui.PlantsViewModel
 
+@SuppressLint("SuspiciousIndentation")
 @Composable
 fun PlantDialog(viewModel : PlantsViewModel, showDialog : MutableState<Boolean>) {
     var selectedPlant = viewModel.selectedPlant.collectAsState()
@@ -90,29 +92,42 @@ fun PlantDialog(viewModel : PlantsViewModel, showDialog : MutableState<Boolean>)
                         .verticalScroll(rememberScrollState())
                     ,
                 ) {
-                    AsyncImage(
-                        model = ImageRequest.Builder(LocalContext.current)
-                            .data(
-                                Uri.parse(selectedPlant.value!!.imagePath))
-                            .placeholder(R.drawable.location_placeholder)
-                            .build(), "", contentScale = ContentScale.Crop, modifier = Modifier
-                            .padding(12.dp)
-                            .height(256.dp)
-                            .width(256.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                            )
+                    if(selectedPlant.value!!.imagePath == ""){
+                        Image(
+                            painter = painterResource(id = R.drawable.plant_placeholder)
+                            , "Plant placeholder",
+                            modifier = Modifier
+                                .padding(12.dp)
+                                .height(256.dp)
+                                .width(256.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
+                    }
+                    else{
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(
+                                    Uri.parse(selectedPlant.value!!.imagePath))
+                                .placeholder(R.drawable.location_placeholder)
+                                .build(), "", contentScale = ContentScale.Crop, modifier = Modifier
+                                .padding(12.dp)
+                                .height(256.dp)
+                                .width(256.dp)
+                                .clip(RoundedCornerShape(16.dp))
+                        )
+                    }
                     PlantXpBar(selectedPlant.value!!.xp)
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(top = 12.dp, bottom = 12.dp)
-                            .clip(RoundedCornerShape(64.dp))
+                            .clip(RoundedCornerShape(16.dp))
                             .background(Color.White)
-                            .padding(12.dp)
+                            .padding(16.dp)
                     ){
                         Text(
-                            textAlign = TextAlign.Center,
+                            textAlign = TextAlign.Justify,
                             text = selectedPlant.value!!.description,
                             color = Color(0xFF261736),
                             fontWeight = FontWeight(500),
